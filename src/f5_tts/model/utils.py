@@ -11,6 +11,7 @@ from pypinyin import Style, lazy_pinyin
 from torch.nn.utils.rnn import pad_sequence
 from pypinyin import Style
 from pypinyin_g2pw import G2PWPinyin
+import re
 
 
 # seed everything
@@ -143,10 +144,7 @@ def get_tokenizer(dataset_name, tokenizer: str = "pinyin"):
 
 
 # convert char to pinyin
-
-
 def convert_char_to_pinyin(text_list, polyphone=True, g2pw = None):
-    print("\nMin Fan modified code v3")
     if jieba.dt.initialized is False:
         jieba.default_logger.setLevel(50)  # CRITICAL
         jieba.initialize()
@@ -165,31 +163,39 @@ def convert_char_to_pinyin(text_list, polyphone=True, g2pw = None):
         return (
             "\u3100" <= c <= "\u9fff"  # common chinese characters
         )
+    TONE3_STYLE_PATTERN = re.compile(r"^[a-zA-Z]+[1-5]$")
+
+    def is_tone3_style(text: str) -> bool:
+        """
+        Detects if a string is in the 'Style.TONE3' pinyin format (e.g., 'hua4').
+        The format is one or more letters followed by a single tone digit (1-5).
+        Returns:
+        True if the string matches the pattern, False otherwise.
+        """
+        # Ensure the input is a string, otherwise it can't match.
+        if not isinstance(text, str):
+            return False
+        
+        return TONE3_STYLE_PATTERN.match(text) is not None
 
     for text in text_list:
         char_list = []
         text = text.translate(custom_trans)
-        for seg in jieba.cut(text):
+        # g2pw采用整句推理
+        segments = g2pw.lazy_pinyin(text, neutral_tone_with_five=True, style=Style.TONE3)
+        for seg in segments:
             seg_byte_len = len(bytes(seg, "UTF-8"))
-            if seg_byte_len == len(seg):  # if pure alphabets and symbols
+            if is_tone3_style(seg):
+                char_list.append(" ")
+                char_list.append(seg)
+            elif seg_byte_len == len(seg):  # if pure alphabets and symbols
                 if char_list and seg_byte_len > 1 and char_list[-1] not in " :'\"":
                     char_list.append(" ")
                 char_list.extend(seg)
-            elif polyphone and seg_byte_len == 3 * len(seg):  # if pure east asian characters
-                seg_ = g2pw.lazy_pinyin(seg, style=Style.TONE3)
-                #seg_ = lazy_pinyin(seg, style=Style.TONE3, tone_sandhi=True)
-                for i, c in enumerate(seg):
-                    if is_chinese(c):
-                        char_list.append(" ")
-                    char_list.append(seg_[i])
             else:  # if mixed characters, alphabets and symbols
                 for c in seg:
                     if ord(c) < 256:
                         char_list.extend(c)
-                    elif is_chinese(c):
-                        char_list.append(" ")
-                        char_list.extend(g2pw.lazy_pinyin(seg, style=Style.TONE3))
-                        #char_list.extend(lazy_pinyin(c, style=Style.TONE3, tone_sandhi=True))
                     else:
                         char_list.append(c)
         final_text_list.append(char_list)
