@@ -398,6 +398,7 @@ def infer_process(
     fix_duration=fix_duration,
     device=device,
     g2pw = None,
+    isDebug = isDebug,
 ):
     # Split the input text into batches
     audio, sr = torchaudio.load(ref_audio)
@@ -471,7 +472,7 @@ def infer_batch_process(
     if len(ref_text[-1].encode("utf-8")) == 1:
         ref_text = ref_text + " "
 
-    def process_batch(gen_text, g2pw):
+    def process_batch(gen_text, g2pw, isDebug):
         local_speed = speed
         if len(gen_text.encode("utf-8")) < 10:
             local_speed = 0.3
