@@ -397,8 +397,8 @@ def infer_process(
     speed=speed,
     fix_duration=fix_duration,
     device=device,
-    g2pw = None,
-    isDebug = isDebug,
+    g2pw=None,
+    isDebug=False,
 ):
     # Split the input text into batches
     audio, sr = torchaudio.load(ref_audio)
@@ -451,8 +451,8 @@ def infer_batch_process(
     device=None,
     streaming=False,
     chunk_size=2048,
-    g2pw = None,
-    isDebug = False,
+    g2pw=None,
+    isDebug=False,
 ):
     audio, sr = ref_audio
     if audio.shape[0] > 1:
