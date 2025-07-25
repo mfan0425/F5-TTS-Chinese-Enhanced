@@ -164,7 +164,7 @@ def convert_char_to_pinyin(text_list, polyphone=True, g2pw = None, isDebug = Fal
         return (
             "\u3100" <= c <= "\u9fff"  # common chinese characters
         )
-    TONE3_STYLE_PATTERN = re.compile(r"^[a-zA-Z]+[1-5]$")
+    TONE3_STYLE_PATTERN = re.compile(r"^[a-zA-Z]+[1-5]?$")
 
     def is_tone3_style(text: str) -> bool:
         """
