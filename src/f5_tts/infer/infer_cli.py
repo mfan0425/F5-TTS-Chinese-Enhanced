@@ -299,8 +299,7 @@ ema_model = load_model(
 print("loading G2PWPinyin...")
 g2pw = G2PWPinyin(model_dir='G2PWModel/',
                   model_source='bert-base-chinese/',
-                  v_to_u=False, neutral_tone_with_five=True) 
-
+                  v_to_u=False, neutral_tone_with_five=False)
 # inference process
 
 

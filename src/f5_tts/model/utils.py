@@ -152,7 +152,7 @@ def convert_char_to_pinyin(text_list, polyphone=True, g2pw = None):
     if g2pw is None:
         g2pw = G2PWPinyin(model_dir='G2PWModel/',
                           model_source='bert-base-chinese/',
-                          v_to_u=False, neutral_tone_with_five=True)
+                          v_to_u=False, neutral_tone_with_five=False)
 
     final_text_list = []
     final_text_list_whole = []
@@ -184,7 +184,7 @@ def convert_char_to_pinyin(text_list, polyphone=True, g2pw = None):
         char_list_whole = []
         text = text.translate(custom_trans)
         # g2pw采用整句推理
-        sentence = g2pw.lazy_pinyin(text, neutral_tone_with_five=True, style=Style.TONE3)
+        sentence = g2pw.lazy_pinyin(text, neutral_tone_with_five=False, style=Style.TONE3)
         filtered_sentence = [
             item for item in sentence 
             if is_tone3_style(item)
