@@ -246,6 +246,7 @@ def convert_char_to_pinyin(text_list, polyphone=True, g2pw = None, isDebug = Fal
         return final_text_list
     else:
         if isDebug:
+            print(f"original pinyin:{final_text_list}")
             print(f"return whole sentence pinyin: {final_text_list_whole}")
         return final_text_list_whole
 
