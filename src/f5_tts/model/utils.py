@@ -155,6 +155,7 @@ def convert_char_to_pinyin(text_list, polyphone=True, g2pw = None):
                           v_to_u=False, neutral_tone_with_five=True)
 
     final_text_list = []
+    final_text_list_whole = []
     custom_trans = str.maketrans(
         {";": ",", "“": '"', "”": '"', "‘": "'", "’": "'"}
     )  # add custom trans here, to address oov
@@ -177,28 +178,64 @@ def convert_char_to_pinyin(text_list, polyphone=True, g2pw = None):
             return False
         
         return TONE3_STYLE_PATTERN.match(text) is not None
-
+    
     for text in text_list:
         char_list = []
+        char_list_whole = []
         text = text.translate(custom_trans)
         # g2pw采用整句推理
-        segments = g2pw.lazy_pinyin(text, neutral_tone_with_five=True, style=Style.TONE3)
-        for seg in segments:
+        sentence = g2pw.lazy_pinyin(text, neutral_tone_with_five=True, style=Style.TONE3)
+        filtered_sentence = [
+            item for item in sentence 
+            if is_tone3_style(item)
+        ]
+        chinese_char_len = len(filtered_sentence)
+        j = 0
+        for seg in jieba.cut(text):
             seg_byte_len = len(bytes(seg, "UTF-8"))
-            if is_tone3_style(seg):
-                char_list.append(" ")
-                char_list.append(seg)
-            elif seg_byte_len == len(seg):  # if pure alphabets and symbols
+            if seg_byte_len == len(seg):  # if pure alphabets and symbols
                 if char_list and seg_byte_len > 1 and char_list[-1] not in " :'\"":
                     char_list.append(" ")
+                    char_list_whole.append(" ")
                 char_list.extend(seg)
+                char_list_whole.extend(seg)
+            elif polyphone and seg_byte_len == 3 * len(seg):  # if pure east asian characters
+                seg_ = lazy_pinyin(seg, style=Style.TONE3, tone_sandhi=True)
+                for i, c in enumerate(seg):
+                    chinese = is_chinese(c)
+                    if chinese:
+                        char_list.append(" ")
+                        char_list_whole.append(" ")
+
+                    char_list.append(seg_[i])
+                    if chinese:
+                        if (j < chinese_char_len):
+                            char_list_whole.append(filtered_sentence[j])
+                        j = j + 1
+                    else:
+                        char_list_whole.append(seg_[i])
+                    
             else:  # if mixed characters, alphabets and symbols
                 for c in seg:
                     if ord(c) < 256:
                         char_list.extend(c)
+                        char_list_whole.extend(c)
+                    elif is_chinese(c):
+                        char_list.append(" ")
+                        char_list_whole.append(" ")
+                        char_list.extend(lazy_pinyin(c, style=Style.TONE3, tone_sandhi=True))
+                        if (j < chinese_char_len):
+                            char_list_whole.append(filtered_sentence[j])
+                        j = j + 1
                     else:
                         char_list.append(c)
+                        char_list_whole.append(c)
         final_text_list.append(char_list)
+        final_text_list_whole.append(char_list)
+        print(final_text_list)
+        print(final_text_list_whole)
+        if (j != final_text_list_whole) :
+            print(f"length different original: {j} new: {len(filtered_sentence)}")
 
     return final_text_list
 
