@@ -187,10 +187,16 @@ def convert_char_to_pinyin(text_list, polyphone=True, g2pw = None, isDebug = Fal
             print(f"tranlated text: {text}")
         # g2pw采用整句推理
         sentence = g2pw.lazy_pinyin(text, neutral_tone_with_five=False, style=Style.TONE3)
-        filtered_sentence = [
+        filtered_sentence_raw = [
             item for item in sentence 
             if is_tone3_style(item)
         ]
+        # translate a pinyin which cannot pronouce well
+        translation_map = {
+            'shei2': 'shui2',
+        }
+        filtered_sentence = [translation_map.get(item, item) for item in filtered_sentence_raw]
+
         if isDebug:
             print(f"filtered sentence: {filtered_sentence}")
         chinese_char_len = len(filtered_sentence)
