@@ -231,13 +231,13 @@ def convert_char_to_pinyin(text_list, polyphone=True, g2pw = None):
                         char_list.append(c)
                         char_list_whole.append(c)
         final_text_list.append(char_list)
-        final_text_list_whole.append(char_list)
-        print(final_text_list)
-        print(final_text_list_whole)
-        if (j != final_text_list_whole) :
-            print(f"length different original: {j} new: {len(filtered_sentence)}")
-
-    return final_text_list
+        final_text_list_whole.append(char_list_whole)
+    
+    if (j != len(filtered_sentence)) :
+        print(f"length different original: {j} new: {len(filtered_sentence)}")
+        return final_text_list
+    else:
+        return final_text_list_whole
 
 
 # filter func for dirty data with many repetitions
