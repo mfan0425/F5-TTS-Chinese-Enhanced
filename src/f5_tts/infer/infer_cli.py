@@ -356,7 +356,7 @@ def main():
             fix_duration=fix_duration,
             device=device,
             g2pw = g2pw,
-            isDebug = False,
+            isDebug=True,
         )
         generated_audio_segments.append(audio_segment)
 
