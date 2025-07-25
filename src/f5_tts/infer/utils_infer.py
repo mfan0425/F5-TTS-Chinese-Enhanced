@@ -451,6 +451,7 @@ def infer_batch_process(
     streaming=False,
     chunk_size=2048,
     g2pw = None,
+    isDebug = False,
 ):
     audio, sr = ref_audio
     if audio.shape[0] > 1:
@@ -478,7 +479,7 @@ def infer_batch_process(
         # Prepare the text
         text_list = [ref_text + gen_text]
         #final_text_list = convert_char_to_pinyin(text_list)
-        final_text_list = convert_char_to_pinyin(text_list, True, g2pw)
+        final_text_list = convert_char_to_pinyin(text_list, True, g2pw, isDebug)
         ref_audio_len = audio.shape[-1] // hop_length
         if fix_duration is not None:
             duration = int(fix_duration * target_sample_rate / hop_length)
@@ -523,11 +524,11 @@ def infer_batch_process(
 
     if streaming:
         for gen_text in progress.tqdm(gen_text_batches) if progress is not None else gen_text_batches:
-            for chunk in process_batch(gen_text, g2pw):
+            for chunk in process_batch(gen_text, g2pw, isDebug):
                 yield chunk
     else:
         with ThreadPoolExecutor() as executor:
-            futures = [executor.submit(process_batch, gen_text, g2pw) for gen_text in gen_text_batches]
+            futures = [executor.submit(process_batch, gen_text, g2pw, isDebug) for gen_text in gen_text_batches]
             for future in progress.tqdm(futures) if progress is not None else futures:
                 result = future.result()
                 if result:

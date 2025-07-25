@@ -144,7 +144,7 @@ def get_tokenizer(dataset_name, tokenizer: str = "pinyin"):
 
 
 # convert char to pinyin
-def convert_char_to_pinyin(text_list, polyphone=True, g2pw = None):
+def convert_char_to_pinyin(text_list, polyphone=True, g2pw = None, isDebug = False):
     if jieba.dt.initialized is False:
         jieba.default_logger.setLevel(50)  # CRITICAL
         jieba.initialize()
@@ -183,12 +183,16 @@ def convert_char_to_pinyin(text_list, polyphone=True, g2pw = None):
         char_list = []
         char_list_whole = []
         text = text.translate(custom_trans)
+        if isDebug:
+            print(f"tranlated text: {text}")
         # g2pw采用整句推理
         sentence = g2pw.lazy_pinyin(text, neutral_tone_with_five=False, style=Style.TONE3)
         filtered_sentence = [
             item for item in sentence 
             if is_tone3_style(item)
         ]
+        if isDebug:
+            print(f"filtered sentence: {filtered_sentence}")
         chinese_char_len = len(filtered_sentence)
         j = 0
         for seg in jieba.cut(text):
@@ -211,6 +215,8 @@ def convert_char_to_pinyin(text_list, polyphone=True, g2pw = None):
                     if chinese:
                         if (j < chinese_char_len):
                             char_list_whole.append(filtered_sentence[j])
+                            if isDebug:
+                                print(f"adding {filtered_sentence[j]}")
                         j = j + 1
                     else:
                         char_list_whole.append(seg_[i])
@@ -226,6 +232,8 @@ def convert_char_to_pinyin(text_list, polyphone=True, g2pw = None):
                         char_list.extend(lazy_pinyin(c, style=Style.TONE3, tone_sandhi=True))
                         if (j < chinese_char_len):
                             char_list_whole.append(filtered_sentence[j])
+                            if isDebug:
+                                print(f"adding {filtered_sentence[j]}")
                         j = j + 1
                     else:
                         char_list.append(c)
@@ -237,6 +245,8 @@ def convert_char_to_pinyin(text_list, polyphone=True, g2pw = None):
         print(f"length different original: {j} new: {len(filtered_sentence)}")
         return final_text_list
     else:
+        if isDebug:
+            print(f"return whole sentence pinyin: {final_text_list_whole}")
         return final_text_list_whole
 
 
