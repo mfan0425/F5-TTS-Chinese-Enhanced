@@ -426,6 +426,7 @@ def infer_process(
             speed=speed,
             fix_duration=fix_duration,
             device=device,
+            isDebug=isDebug,
         )
     )
 
